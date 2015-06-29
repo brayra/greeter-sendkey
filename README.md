@@ -16,7 +16,7 @@ This allows complete control of the PC and multiple accounts withouth requiring 
 
 ## How to Use
 
-1. Install configuration files for lirc and lightdm
+1. Install configuration files for lirc and lightdm: `sudo setup.py install`
 
 2. Adjust lirc configuration file for you remote. Make sure to support number keys and a backspace to allow numeric passwords. Default is for MCE Remote (mceusb):
     * Up (KEY_UP)
