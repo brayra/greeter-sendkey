@@ -1,0 +1,9 @@
+#!/bin/sh
+
+pkill -u root irexec
+
+(
+	# lirc server may not be running
+	pidof lircd || sleep 5
+	irexec /etc/lirc/lirc.greeter.conf &
+) &

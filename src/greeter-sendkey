@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# Written by Richard Bray
+# adapted from example code by user hp1 on askubuntu.com
+#
+# This script allows sending characters to the lightdm login screen
+#
+
+CODE=0
+
+# previous example code. which does not work correctly on Ubuntu 14.04
+#LOGIN=`who | grep tty7 | /usr/bin/awk '{ print $1 }'`
+
+# find users logged into a graphical session. updated for 14.04
+LOGIN=`who |sed 's/  */\t/g'|cut -f 2|grep ':[0-9]$'`
+
+usage()
+{
+ echo "usage: $PROG [ OPTIONS ] CMD"
+ echo '       -k       : treat commands as keycode'
+ echo '       -h       : display this help'
+ echo ''
+ echo 'This script allows sending characters to the lightdm login screen.'
+ echo 'If there is a user logged in, then it will not send any characters.'
+}
+
+while getopts ":kh" opt; do
+  case $opt in 
+    k  ) CODE=1;;
+    h  ) usage
+         exit 1
+         ;;
+    \? ) usage
+         exit 1
+  esac
+done
+shift $(($OPTIND -1))
+
+if [ $UID -ne 0 ] ; then 
+	echo "must be root"
+	exit 2
+fi
+
+if [ -z "$1" ]; then
+	echo "usage: greeter_sendkey CMD"
+	exit 3
+fi
+
+if [ "$LOGIN" ]; then
+	echo "$LOGIN is logged into console"
+	exit 99
+else
+
+	val="$1"
+	# Get access to the xauth file. 
+	# Otherwise, xdotool cannot send keys to the greeter.
+	export XAUTHORITY=`ls /var/run/lightdm/root/\:*|head -n 1`
+	export DISPLAY=`basename "$XAUTHORITY"`
+	
+	if (( CODE > 0 )) ; then
+		# user requested to send a specific or special key
+		/usr/bin/xdotool key "$val"
+	else
+		# user passed in a string. Type it out.
+		len=$(( ${#val} - 1 ))
+		for n in `seq 0 ${len}` ; do
+			KEY=${val:$n:1}
+			/usr/bin/xdotool type ${val:$n:1}
+		done
+	fi
+fi
+
